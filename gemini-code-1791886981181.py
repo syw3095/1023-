@@ -8,7 +8,7 @@ st.set_page_config(
 )
 
 # -----------------------------------------------------------------------------
-# 1. 커스텀 CSS (글자색 진하게 고정 및 선택지 버튼 시인성 확보)
+# 1. 커스텀 CSS (글자색 진하게 고정 및 카톡 UI)
 # -----------------------------------------------------------------------------
 st.markdown("""
 <style>
@@ -128,7 +128,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# 2. 문제 데이터 세트 (구문 오류 완벽 수정)
+# 2. 문제별 독립 지문 데이터 세트
 # -----------------------------------------------------------------------------
 QUIZ_DATA = [
     {
@@ -237,14 +237,16 @@ QUIZ_DATA = [
 ]
 
 # -----------------------------------------------------------------------------
-# 3. 세션 상태 관리
+# 3. 세션 상태 엄격 관리
 # -----------------------------------------------------------------------------
 if 'current_idx' not in st.session_state:
     st.session_state.current_idx = 0
 if 'selected_option' not in st.session_state:
     st.session_state.selected_option = None
 
-current_quiz = QUIZ_DATA[st.session_state.current_idx]
+# 현재 인덱스 세션 상태값을 변수로 정확히 취득
+curr_i = st.session_state.current_idx
+current_quiz = QUIZ_DATA[curr_i]
 
 # -----------------------------------------------------------------------------
 # 4. 헤더 및 진행도
@@ -252,15 +254,16 @@ current_quiz = QUIZ_DATA[st.session_state.current_idx]
 st.title("💬 상황극 맞춤법 학습기")
 st.markdown("<b>대화 상황 속에서 올바른 어휘를 고르고, 선명한 비교 해설을 확인해보세요.</b>", unsafe_allow_html=True)
 
-progress = (st.session_state.current_idx + 1) / len(QUIZ_DATA)
+progress = (curr_i + 1) / len(QUIZ_DATA)
 st.progress(progress)
-st.markdown(f"<h4 style='color:#111111;'>문제 {st.session_state.current_idx + 1} / {len(QUIZ_DATA)} : {current_quiz['title']}</h4>", unsafe_allow_html=True)
+st.markdown(f"<h4 style='color:#111111;'>문제 {curr_i + 1} / {len(QUIZ_DATA)} : {current_quiz['title']}</h4>", unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# 5. 카카오톡 대화창
+# 5. 카카오톡 대화창 (현재 인덱스 데이터 current_quiz 대입)
 # -----------------------------------------------------------------------------
 st.markdown('<div class="chat-container">', unsafe_allow_html=True)
 
+# 현재 문제(current_quiz)의 dialogue 배열을 읽어옴
 for msg in current_quiz["dialogue"]:
     if msg["sender"] == "friend":
         text = msg["text"]
@@ -280,7 +283,7 @@ if st.session_state.selected_option is not None:
 st.markdown('</div>', unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# 6. 선택지 버튼
+# 6. 선택지 버튼 (현재 문제 인덱스로 고유 키 생성)
 # -----------------------------------------------------------------------------
 if st.session_state.selected_option is None:
     st.markdown("<h3>💡 알맞은 어휘를 선택하세요</h3>", unsafe_allow_html=True)
@@ -288,7 +291,7 @@ if st.session_state.selected_option is None:
     
     for i, opt in enumerate(current_quiz["options"]):
         col = col1 if i == 0 else col2
-        if col.button(opt, use_container_width=True, key=f"q_{st.session_state.current_idx}_opt_{i}"):
+        if col.button(opt, use_container_width=True, key=f"q_{curr_i}_opt_{i}"):
             st.session_state.selected_option = opt
             st.rerun()
 
@@ -346,8 +349,9 @@ if st.session_state.selected_option is not None:
 
     st.write("")
     
-    if st.session_state.current_idx < len(QUIZ_DATA) - 1:
-        if st.button("다음 문제 풀기 ➡️", use_container_width=True, key=f"next_btn_{st.session_state.current_idx}"):
+    # 다음 문제 이동 처리
+    if curr_i < len(QUIZ_DATA) - 1:
+        if st.button("다음 문제 풀기 ➡️", use_container_width=True, key=f"next_btn_{curr_i}"):
             st.session_state.current_idx += 1
             st.session_state.selected_option = None
             st.rerun()
