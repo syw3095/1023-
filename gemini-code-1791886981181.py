@@ -112,7 +112,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# 2. 검수 완료된 데이터 세트 (선택지-설명-예문 일치)
+# 2. 검수 완료된 데이터 세트 (지문-선택지-해설 1:1 완벽 일치)
 # -----------------------------------------------------------------------------
 QUIZ_DATA = [
     {
@@ -126,7 +126,7 @@ QUIZ_DATA = [
         "correct": "부치고",
         "wrong_reaction": "응? 상자에 우표나 접착 테이프를 붙이고 왔다는 뜻이야, 아니면 택배로 보냈다는 뜻이야?",
         "card": {
-            "correct_word": "부치다 (선택한 답: 부치고)",
+            "correct_word": "부치다 (선택지: 부치고)",
             "correct_icon": "📮",
             "correct_meaning": "편지, 물품, 안건 등을 다른 곳으로 보내거나 넘기다.",
             "correct_tip": "💡 <b>구분 팁:</b> '보내다'의 의미가 있으면 무조건 <b>'부치다'</b>입니다. (풀/접착제 사용 ❌)",
@@ -142,7 +142,7 @@ QUIZ_DATA = [
                 "명절이라 하루 종일 노릇하게 전을 <b>부쳤다</b>."
             ],
             
-            "wrong_word": "붙이다 (선택한 답: 붙이고)",
+            "wrong_word": "붙이다 (선택지: 붙이고)",
             "wrong_icon": "🏷️",
             "wrong_meaning": "맞닿아 떨어지지 않게 접착하거나, 불/조건/이름 등을 더하다.",
             "wrong_tip": "💡 <b>구분 팁:</b> 풀, 테이프, 접착제 등으로 <b>'착 맞닿게 접착하는 동작'</b>일 때만 <b>'붙이다'</b>입니다.",
@@ -167,7 +167,7 @@ QUIZ_DATA = [
         ],
         "options": ["돼", "되"],
         "correct": "돼",
-        "wrong_reaction": "'만나도 하?'라고 말하면 어색하지 않아? '해'를 넣어야 말이 자연스러워!",
+        "wrong_reaction": "'만나도 하?'라고 말하면 어색하지 않아? '해'를 넣어서 '만나도 해(돼)'가 자연스러워!",
         "card": {
             "correct_word": "돼 ('되어'의 줄임말)",
             "correct_icon": "🆗",
@@ -208,161 +208,4 @@ QUIZ_DATA = [
         ],
         "options": ["어이없다", "어의없다"],
         "correct": "어이없다",
-        "wrong_reaction": "조선시대 임금님 담당 의사(어의)가 집으로 가버렸다는 뜻이야...?",
-        "card": {
-            "correct_word": "어이없다 (선택지: 어이없다)",
-            "correct_icon": "🤦",
-            "correct_meaning": "일이 너무 뜻밖이거나 기가 막혀서 황당하다.",
-            "correct_tip": "💡 <b>구분 팁:</b> '어이'는 맷돌 손잡이(어처구니)를 뜻하는 말에서 유래했습니다. 손잡이가 빠져 황당할 때 <b>'어이없다'</b>를 씁니다.",
-            "correct_desc": """
-            황당하거나 기가 막히는 상황을 표현할 때는 무조건 <b>'어이없다'</b> 또는 <b>'어처구니없다'</b>가 올바른 표준어입니다.<br>
-            발음이 비슷하여 '어의'로 잘못 적는 경우가 많지만, 의사를 뜻하는 '어의'와는 아무 관련이 없습니다.
-            """,
-            "correct_examples": [
-                "바쁘게 뛰어왔는데 휴강이라니 너무 <b>어이없다</b>.",
-                "그런 <b>어이없는</b> 실수를 저지르다니 믿기지 않아.",
-                "상대방의 <b>어이없는</b> 행동에 말문이 막혔다."
-            ],
-            
-            "wrong_word": "어의 (御醫)",
-            "wrong_icon": "👨‍⚕️",
-            "wrong_meaning": "궁궐에서 임금이나 왕족의 병을 치료하던 의사.",
-            "wrong_tip": "💡 <b>구분 팁:</b> 사극에 나오는 '임금님의 전담 의사'를 뜻하는 명사입니다.",
-            "wrong_desc": """
-            '어의'는 황당하다는 뜻의 형용사가 아니라 직업을 뜻하는 명사입니다.<br>
-            따라서 '어의없다'라고 쓰면 "궁중에 의사가 없다"라는 전혀 다른 뜻이 됩니다.
-            """,
-            "wrong_examples": [
-                "<b>어의</b>, 전하의 옥체를 정성껏 보살피거라!",
-                "조선 시대 명의로 알려진 <b>어의</b> 허준."
-            ]
-        }
-    }
-]
-
-# -----------------------------------------------------------------------------
-# 3. 세션 상태 관리
-# -----------------------------------------------------------------------------
-if 'current_idx' not in st.session_state:
-    st.session_state.current_idx = 0
-if 'selected_option' not in st.session_state:
-    st.session_state.selected_option = None
-
-current_quiz = QUIZ_DATA[st.session_state.current_idx]
-
-# -----------------------------------------------------------------------------
-# 4. 앱 헤더 및 진행도
-# -----------------------------------------------------------------------------
-st.title("💬 상황극 맞춤법 학습기")
-st.markdown("<b>대화 상황 속에서 올바른 어휘를 고르고, 선명한 비교 해설을 확인해보세요.</b>", unsafe_allow_html=True)
-
-progress = (st.session_state.current_idx + 1) / len(QUIZ_DATA)
-st.progress(progress)
-st.markdown(f"<h4 style='color:#111111;'>문제 {st.session_state.current_idx + 1} / {len(QUIZ_DATA)} : {current_quiz['title']}</h4>", unsafe_allow_html=True)
-
-# -----------------------------------------------------------------------------
-# 5. 카카오톡 스타일 대화창 화면
-# -----------------------------------------------------------------------------
-st.markdown('<div class="chat-container">', unsafe_allow_html=True)
-
-for msg in current_quiz["dialogue"]:
-    if msg["sender"] == "friend":
-        text = msg["text"]
-        if "[ANSWER]" in text:
-            if st.session_state.selected_option is None:
-                display_text = text.replace("[ANSWER]", "<b style='color:#d9480f;'>[ ??? ]</b>")
-            else:
-                display_text = text.replace("[ANSWER]", f"<b style='color:#0d6efd;'><u>{st.session_state.selected_option}</u></b>")
-        else:
-            display_text = text
-            
-        st.markdown(f'<div class="chat-bubble-left">👤 <b>친구</b><br>{display_text}</div><div style="clear:both;"></div>', unsafe_allow_html=True)
-
-# 사용자가 선택했을 때 오른쪽 유저 말풍선 표시
-if st.session_state.selected_option is not None:
-    st.markdown(f'<div class="chat-bubble-right">{st.session_state.selected_option}!</div><div style="clear:both;"></div>', unsafe_allow_html=True)
-
-st.markdown('</div>', unsafe_allow_html=True)
-
-# -----------------------------------------------------------------------------
-# 6. 선택지 버튼 영역
-# -----------------------------------------------------------------------------
-if st.session_state.selected_option is None:
-    st.markdown("<h3>💡 알맞은 어휘를 선택하세요</h3>", unsafe_allow_html=True)
-    col1, col2 = st.columns(2)
-    
-    for i, opt in enumerate(current_quiz["options"]):
-        col = col1 if i == 0 else col2
-        if col.button(opt, use_container_width=True, key=f"btn_{opt}"):
-            st.session_state.selected_option = opt
-            st.rerun()
-
-# -----------------------------------------------------------------------------
-# 7. 피드백 & 상세 비교 해설 카드 영역
-# -----------------------------------------------------------------------------
-if st.session_state.selected_option is not None:
-    is_correct = (st.session_state.selected_option == current_quiz["correct"])
-    card_data = current_quiz["card"]
-
-    if is_correct:
-        st.success("🎉 정답입니다! 문맥에 정확한 표현을 고르셨습니다.")
-    else:
-        st.error("❌ 오답입니다! 어색한 표현을 선택하셨습니다.")
-        st.warning(f"🗣️ **친구 반응:** \"{current_quiz['wrong_reaction']}\"")
-
-    st.write("---")
-    st.markdown("<h3 style='color:#111111;'>📚 맞춤법 & 어휘 상세 비교 해설</h3>", unsafe_allow_html=True)
-
-    # 2열 카드 배치
-    col_correct, col_wrong = st.columns(2)
-    
-    # 1) 올바른 표현 카드
-    with col_correct:
-        ex_list_html = "".join([f"<li>{ex}</li>" for ex in card_data["correct_examples"]])
-        st.markdown(f"""
-        <div class="card-box correct-border">
-            <h3 style="color:#198754 !important;">⭕ 올바른 표현<br><small style="font-size:16px;">{card_data['correct_word']}</small></h3>
-            <div class="visual-icon">{card_data['correct_icon']}</div>
-            <p><b>[핵심 뜻]</b><br>{card_data['correct_meaning']}</p>
-            <div class="tip-box">{card_data['correct_tip']}</div>
-            <p><b>[상세 설명]</b><br>{card_data['correct_desc']}</p>
-            <hr style="margin:15px 0;">
-            <p><b>[대표 예문]</b></p>
-            <ul class="example-list" style="padding-left: 18px;">
-                {ex_list_html}
-            </ul>
-        </div>
-        """, unsafe_allow_html=True)
-        
-    # 2) 틀린/헷갈리는 표현 카드
-    with col_wrong:
-        ex_wrong_html = "".join([f"<li>{ex}</li>" for ex in card_data["wrong_examples"]])
-        st.markdown(f"""
-        <div class="card-box wrong-border">
-            <h3 style="color:#dc3545 !important;">❌ 헷갈리는 표현<br><small style="font-size:16px;">{card_data['wrong_word']}</small></h3>
-            <div class="visual-icon">{card_data['wrong_icon']}</div>
-            <p><b>[핵심 뜻]</b><br>{card_data['wrong_meaning']}</p>
-            <div class="tip-box">{card_data['wrong_tip']}</div>
-            <p><b>[상세 설명]</b><br>{card_data['wrong_desc']}</p>
-            <hr style="margin:15px 0;">
-            <p><b>[대표 예문]</b></p>
-            <ul class="example-list" style="padding-left: 18px;">
-                {ex_wrong_html}
-            </ul>
-        </div>
-        """, unsafe_allow_html=True)
-
-    st.write("")
-    # 다음 문제 버튼
-    if st.session_state.current_idx < len(QUIZ_DATA) - 1:
-        if st.button("다음 문제 풀기 ➡️", type="primary", use_container_width=True):
-            st.session_state.current_idx += 1
-            st.session_state.selected_option = None
-            st.rerun()
-    else:
-        st.balloons()
-        st.success("🏆 모든 대화 학습을 다 마쳤습니다!")
-        if st.button("처음부터 다시 학습하기 🔄", use_container_width=True):
-            st.session_state.current_idx = 0
-            st.session_state.selected_option = None
-            st.rerun()
+        "wrong_reaction": "조선시대 임금님 담당 의사
