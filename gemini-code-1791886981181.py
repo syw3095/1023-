@@ -8,127 +8,26 @@ st.set_page_config(
 )
 
 # -----------------------------------------------------------------------------
-# 1. 커스텀 CSS (글자색 진하게 고정 및 카톡 UI)
+# 1. 세션 상태 및 콜백 함수 (가장 상단에 배치)
 # -----------------------------------------------------------------------------
-st.markdown("""
-<style>
-    /* 전체 배경 설정 */
-    .stApp {
-        background-color: #f4f6f8;
-    }
+if 'current_idx' not in st.session_state:
+    st.session_state.current_idx = 0
+if 'selected_option' not in st.session_state:
+    st.session_state.selected_option = None
 
-    /* 모든 텍스트 요소의 색상을 선명한 검은색으로 고정 */
-    html, body, [class*="css"], h1, h2, h3, h4, h5, h6, p, span, li, label, div {
-        color: #111111 !important;
-        font-weight: 500;
-    }
+def select_answer(option):
+    st.session_state.selected_option = option
 
-    /* 채팅 컨테이너 (카카오톡 배경) */
-    .chat-container {
-        background-color: #a3c2e0;
-        padding: 20px;
-        border-radius: 16px;
-        max-width: 480px;
-        margin: 0 auto 20px auto;
-        box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.12);
-    }
-    
-    /* 상대방 말풍선 */
-    .chat-bubble-left {
-        background-color: #ffffff;
-        color: #111111 !important;
-        padding: 12px 16px;
-        border-radius: 14px;
-        border-top-left-radius: 2px;
-        margin-bottom: 14px;
-        max-width: 85%;
-        display: inline-block;
-        font-size: 16px;
-        line-height: 1.5;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.08);
-    }
-    
-    /* 나(유저) 말풍선 */
-    .chat-bubble-right {
-        background-color: #ffe600;
-        color: #111111 !important;
-        padding: 12px 16px;
-        border-radius: 14px;
-        border-top-right-radius: 2px;
-        margin-bottom: 14px;
-        max-width: 85%;
-        float: right;
-        clear: both;
-        font-size: 16px;
-        line-height: 1.5;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.08);
-        font-weight: bold;
-    }
+def next_quiz():
+    st.session_state.current_idx += 1
+    st.session_state.selected_option = None
 
-    /* 선택지 버튼 스타일 고정 */
-    .stButton > button {
-        background-color: #ffffff !important;
-        color: #111111 !important;
-        border: 2px solid #ced4da !important;
-        border-radius: 10px !important;
-        font-size: 18px !important;
-        font-weight: bold !important;
-        padding: 10px !important;
-    }
-    
-    .stButton > button:hover {
-        background-color: #e9ecef !important;
-        border-color: #adb5bd !important;
-    }
-
-    /* 피드백 해설 카드 스타일 */
-    .card-box {
-        background-color: #ffffff;
-        border-radius: 14px;
-        padding: 22px;
-        margin-top: 15px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        border: 1px solid #e1e4e8;
-    }
-    
-    .correct-border {
-        border-top: 6px solid #198754;
-    }
-
-    .wrong-border {
-        border-top: 6px solid #dc3545;
-    }
-
-    .visual-icon {
-        font-size: 52px;
-        text-align: center;
-        margin: 12px 0;
-    }
-
-    /* 구분 팁 강조 박스 */
-    .tip-box {
-        background-color: #fff9db;
-        border-left: 5px solid #fcc419;
-        padding: 14px 16px;
-        border-radius: 8px;
-        margin: 14px 0;
-        font-size: 15px;
-        line-height: 1.6;
-        color: #212529 !important;
-    }
-
-    /* 예문 리스트 글자 */
-    .example-list li {
-        color: #222222 !important;
-        font-size: 15px;
-        margin-bottom: 6px;
-        line-height: 1.5;
-    }
-</style>
-""", unsafe_allow_html=True)
+def reset_quiz():
+    st.session_state.current_idx = 0
+    st.session_state.selected_option = None
 
 # -----------------------------------------------------------------------------
-# 2. 문제별 독립 지문 데이터 세트
+# 2. 문제 데이터 세트
 # -----------------------------------------------------------------------------
 QUIZ_DATA = [
     {
@@ -153,7 +52,6 @@ QUIZ_DATA = [
                 "오늘 안건을 무기명 투표에 <b>부치기로</b> 했습니다.",
                 "명절이라 하루 종일 노릇하게 전을 <b>부쳤다</b>."
             ],
-            
             "wrong_word": "붙이다 (선택지: 붙이고)",
             "wrong_icon": "🏷️",
             "wrong_meaning": "맞닿아 떨어지지 않게 접착하거나, 불/조건/이름 등을 더하다.",
@@ -188,7 +86,6 @@ QUIZ_DATA = [
                 "지금 약속 장소로 가도 <b>돼</b>.",
                 "그렇게 행동하면 절대로 안 <b>돼</b>!"
             ],
-            
             "wrong_word": "되 (어간 단독 표기)",
             "wrong_icon": "🛑",
             "wrong_meaning": "동사/형용사 '되다'의 어간. 단독으로는 문장 끝에 올 수 없음.",
@@ -222,7 +119,6 @@ QUIZ_DATA = [
                 "그런 <b>어이없는</b> 실수를 저지르다니 믿기지 않아.",
                 "상대방의 <b>어이없는</b> 행동에 말문이 막혔다."
             ],
-            
             "wrong_word": "어의 (御醫)",
             "wrong_icon": "👨‍⚕️",
             "wrong_meaning": "궁궐에서 임금이나 왕족의 병을 치료하던 의사.",
@@ -237,34 +133,116 @@ QUIZ_DATA = [
 ]
 
 # -----------------------------------------------------------------------------
-# 3. 세션 상태 엄격 관리
+# 3. 커스텀 CSS (글자색 진하게 고정 및 카톡 UI)
 # -----------------------------------------------------------------------------
-if 'current_idx' not in st.session_state:
-    st.session_state.current_idx = 0
-if 'selected_option' not in st.session_state:
-    st.session_state.selected_option = None
+st.markdown("""
+<style>
+    .stApp {
+        background-color: #f4f6f8;
+    }
+    html, body, [class*="css"], h1, h2, h3, h4, h5, h6, p, span, li, label, div {
+        color: #111111 !important;
+        font-weight: 500;
+    }
+    .chat-container {
+        background-color: #a3c2e0;
+        padding: 20px;
+        border-radius: 16px;
+        max-width: 480px;
+        margin: 0 auto 20px auto;
+        box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.12);
+    }
+    .chat-bubble-left {
+        background-color: #ffffff;
+        color: #111111 !important;
+        padding: 12px 16px;
+        border-radius: 14px;
+        border-top-left-radius: 2px;
+        margin-bottom: 14px;
+        max-width: 85%;
+        display: inline-block;
+        font-size: 16px;
+        line-height: 1.5;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+    }
+    .chat-bubble-right {
+        background-color: #ffe600;
+        color: #111111 !important;
+        padding: 12px 16px;
+        border-radius: 14px;
+        border-top-right-radius: 2px;
+        margin-bottom: 14px;
+        max-width: 85%;
+        float: right;
+        clear: both;
+        font-size: 16px;
+        line-height: 1.5;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+        font-weight: bold;
+    }
+    .stButton > button {
+        background-color: #ffffff !important;
+        color: #111111 !important;
+        border: 2px solid #ced4da !important;
+        border-radius: 10px !important;
+        font-size: 18px !important;
+        font-weight: bold !important;
+        padding: 10px !important;
+    }
+    .stButton > button:hover {
+        background-color: #e9ecef !important;
+        border-color: #adb5bd !important;
+    }
+    .card-box {
+        background-color: #ffffff;
+        border-radius: 14px;
+        padding: 22px;
+        margin-top: 15px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        border: 1px solid #e1e4e8;
+    }
+    .correct-border { border-top: 6px solid #198754; }
+    .wrong-border { border-top: 6px solid #dc3545; }
+    .visual-icon { font-size: 52px; text-align: center; margin: 12px 0; }
+    .tip-box {
+        background-color: #fff9db;
+        border-left: 5px solid #fcc419;
+        padding: 14px 16px;
+        border-radius: 8px;
+        margin: 14px 0;
+        font-size: 15px;
+        line-height: 1.6;
+        color: #212529 !important;
+    }
+    .example-list li {
+        color: #222222 !important;
+        font-size: 15px;
+        margin-bottom: 6px;
+        line-height: 1.5;
+    }
+</style>
+""", unsafe_allow_html=True)
 
-# 현재 인덱스 세션 상태값을 변수로 정확히 취득
-curr_i = st.session_state.current_idx
-current_quiz = QUIZ_DATA[curr_i]
+# -----------------------------------------------------------------------------
+# 4. 헤더 및 현재 문제 데이터 확정
+# -----------------------------------------------------------------------------
+cur_idx = st.session_state.current_idx
+current_quiz = QUIZ_DATA[cur_idx]
 
-# -----------------------------------------------------------------------------
-# 4. 헤더 및 진행도
-# -----------------------------------------------------------------------------
 st.title("💬 상황극 맞춤법 학습기")
 st.markdown("<b>대화 상황 속에서 올바른 어휘를 고르고, 선명한 비교 해설을 확인해보세요.</b>", unsafe_allow_html=True)
 
-progress = (curr_i + 1) / len(QUIZ_DATA)
+progress = (cur_idx + 1) / len(QUIZ_DATA)
 st.progress(progress)
-st.markdown(f"<h4 style='color:#111111;'>문제 {curr_i + 1} / {len(QUIZ_DATA)} : {current_quiz['title']}</h4>", unsafe_allow_html=True)
+st.markdown(f"<h4 style='color:#111111;'>문제 {cur_idx + 1} / {len(QUIZ_DATA)} : {current_quiz['title']}</h4>", unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# 5. 카카오톡 대화창 (현재 인덱스 데이터 current_quiz 대입)
+# 5. 카카오톡 대화창 (동적 데이터 엄격 출력)
 # -----------------------------------------------------------------------------
 st.markdown('<div class="chat-container">', unsafe_allow_html=True)
 
-# 현재 문제(current_quiz)의 dialogue 배열을 읽어옴
-for msg in current_quiz["dialogue"]:
+# QUIZ_DATA[cur_idx] 의 대화 목록만 순회
+for msg in QUIZ_DATA[cur_idx]["dialogue"]:
     if msg["sender"] == "friend":
         text = msg["text"]
         if "[ANSWER]" in text:
@@ -283,7 +261,7 @@ if st.session_state.selected_option is not None:
 st.markdown('</div>', unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# 6. 선택지 버튼 (현재 문제 인덱스로 고유 키 생성)
+# 6. 선택지 버튼
 # -----------------------------------------------------------------------------
 if st.session_state.selected_option is None:
     st.markdown("<h3>💡 알맞은 어휘를 선택하세요</h3>", unsafe_allow_html=True)
@@ -291,9 +269,13 @@ if st.session_state.selected_option is None:
     
     for i, opt in enumerate(current_quiz["options"]):
         col = col1 if i == 0 else col2
-        if col.button(opt, use_container_width=True, key=f"q_{curr_i}_opt_{i}"):
-            st.session_state.selected_option = opt
-            st.rerun()
+        col.button(
+            opt, 
+            use_container_width=True, 
+            key=f"opt_btn_{cur_idx}_{i}", 
+            on_click=select_answer, 
+            args=(opt,)
+        )
 
 # -----------------------------------------------------------------------------
 # 7. 피드백 및 해설 카드
@@ -349,16 +331,9 @@ if st.session_state.selected_option is not None:
 
     st.write("")
     
-    # 다음 문제 이동 처리
-    if curr_i < len(QUIZ_DATA) - 1:
-        if st.button("다음 문제 풀기 ➡️", use_container_width=True, key=f"next_btn_{curr_i}"):
-            st.session_state.current_idx += 1
-            st.session_state.selected_option = None
-            st.rerun()
+    if cur_idx < len(QUIZ_DATA) - 1:
+        st.button("다음 문제 풀기 ➡️", use_container_width=True, key=f"next_btn_{cur_idx}", on_click=next_quiz)
     else:
         st.balloons()
         st.success("🏆 모든 대화 학습을 다 마쳤습니다!")
-        if st.button("처음부터 다시 학습하기 🔄", use_container_width=True, key="reset_btn_end"):
-            st.session_state.current_idx = 0
-            st.session_state.selected_option = None
-            st.rerun()
+        st.button("처음부터 다시 학습하기 🔄", use_container_width=True, key="reset_btn_end", on_click=reset_quiz)
