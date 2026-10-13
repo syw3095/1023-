@@ -8,7 +8,7 @@ st.set_page_config(
 )
 
 # -----------------------------------------------------------------------------
-# 1. 세션 상태 및 콜백 함수 (가장 상단에 배치)
+# 1. 세션 상태 및 변수 초기화 (가장 상단 배치)
 # -----------------------------------------------------------------------------
 if 'current_idx' not in st.session_state:
     st.session_state.current_idx = 0
@@ -27,15 +27,15 @@ def reset_quiz():
     st.session_state.selected_option = None
 
 # -----------------------------------------------------------------------------
-# 2. 문제 데이터 세트
+# 2. 문제 데이터 세트 (문제 1, 2, 3 지문 완전 분리)
 # -----------------------------------------------------------------------------
 QUIZ_DATA = [
     {
         "id": 1,
         "title": "우체국 택배와 부침개 (부치다 vs 붙이다)",
         "dialogue": [
-            {"sender": "friend", "text": "야, 나 방금 우체국 다녀오는 길이야!"},
-            {"sender": "friend", "text": "고향 집에 계신 부모님께 명절 선물 상자를 [ANSWER] 왔지."}
+            "야, 나 방금 우체국 다녀오는 길이야!",
+            "고향 집에 계신 부모님께 명절 선물 상자를 [ANSWER] 왔지."
         ],
         "options": ["부치고", "붙이고"],
         "correct": "부치고",
@@ -69,8 +69,8 @@ QUIZ_DATA = [
         "id": 2,
         "title": "저녁 약속 시간 정하기 (되 vs 돼)",
         "dialogue": [
-            {"sender": "friend", "text": "오늘 저녁에 갑자기 야근 취소됐다!"},
-            {"sender": "friend", "text": "혹시 오늘 저녁 7시에 만나도 [ANSWER]?"}
+            "오늘 저녁에 갑자기 야근 취소됐다!",
+            "혹시 오늘 저녁 7시에 만나도 [ANSWER]?"
         ],
         "options": ["돼", "되"],
         "correct": "돼",
@@ -102,8 +102,8 @@ QUIZ_DATA = [
         "id": 3,
         "title": "황당한 상황 연출 (어이없다 vs 어의없다)",
         "dialogue": [
-            {"sender": "friend", "text": "아 아침부터 지하철 반대로 타서 지각했어..."},
-            {"sender": "friend", "text": "바쁘게 뛰어왔는데 오늘 휴강이래. 진짜 너무 [ANSWER]..."}
+            "아 아침부터 지하철 반대로 타서 지각했어...",
+            "바쁘게 뛰어왔는데 오늘 휴강이래. 진짜 너무 [ANSWER]..."
         ],
         "options": ["어이없다", "어의없다"],
         "correct": "어이없다",
@@ -133,13 +133,11 @@ QUIZ_DATA = [
 ]
 
 # -----------------------------------------------------------------------------
-# 3. 커스텀 CSS (글자색 진하게 고정 및 카톡 UI)
+# 3. 커스텀 CSS
 # -----------------------------------------------------------------------------
 st.markdown("""
 <style>
-    .stApp {
-        background-color: #f4f6f8;
-    }
+    .stApp { background-color: #f4f6f8; }
     html, body, [class*="css"], h1, h2, h3, h4, h5, h6, p, span, li, label, div {
         color: #111111 !important;
         font-weight: 500;
@@ -224,36 +222,32 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# 4. 헤더 및 현재 문제 데이터 확정
+# 4. 현재 문제 인덱스 및 데이터 동적 매핑
 # -----------------------------------------------------------------------------
-cur_idx = st.session_state.current_idx
-current_quiz = QUIZ_DATA[cur_idx]
+idx = st.session_state.current_idx
+quiz = QUIZ_DATA[idx]
 
 st.title("💬 상황극 맞춤법 학습기")
 st.markdown("<b>대화 상황 속에서 올바른 어휘를 고르고, 선명한 비교 해설을 확인해보세요.</b>", unsafe_allow_html=True)
 
-progress = (cur_idx + 1) / len(QUIZ_DATA)
-st.progress(progress)
-st.markdown(f"<h4 style='color:#111111;'>문제 {cur_idx + 1} / {len(QUIZ_DATA)} : {current_quiz['title']}</h4>", unsafe_allow_html=True)
+st.progress((idx + 1) / len(QUIZ_DATA))
+st.markdown(f"<h4 style='color:#111111;'>문제 {idx + 1} / {len(QUIZ_DATA)} : {quiz['title']}</h4>", unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# 5. 카카오톡 대화창 (동적 데이터 엄격 출력)
+# 5. 대화창 렌더링 (현재 인덱스 quiz["dialogue"] 직접 바인딩)
 # -----------------------------------------------------------------------------
 st.markdown('<div class="chat-container">', unsafe_allow_html=True)
 
-# QUIZ_DATA[cur_idx] 의 대화 목록만 순회
-for msg in QUIZ_DATA[cur_idx]["dialogue"]:
-    if msg["sender"] == "friend":
-        text = msg["text"]
-        if "[ANSWER]" in text:
-            if st.session_state.selected_option is None:
-                display_text = text.replace("[ANSWER]", "<b style='color:#d9480f;'>[ ??? ]</b>")
-            else:
-                display_text = text.replace("[ANSWER]", f"<b style='color:#0d6efd;'><u>{st.session_state.selected_option}</u></b>")
+for line in quiz["dialogue"]:
+    if "[ANSWER]" in line:
+        if st.session_state.selected_option is None:
+            text_to_show = line.replace("[ANSWER]", "<b style='color:#d9480f;'>[ ??? ]</b>")
         else:
-            display_text = text
-            
-        st.markdown(f'<div class="chat-bubble-left">👤 <b>친구</b><br>{display_text}</div><div style="clear:both;"></div>', unsafe_allow_html=True)
+            text_to_show = line.replace("[ANSWER]", f"<b style='color:#0d6efd;'><u>{st.session_state.selected_option}</u></b>")
+    else:
+        text_to_show = line
+        
+    st.markdown(f'<div class="chat-bubble-left">👤 <b>친구</b><br>{text_to_show}</div><div style="clear:both;"></div>', unsafe_allow_html=True)
 
 if st.session_state.selected_option is not None:
     st.markdown(f'<div class="chat-bubble-right">{st.session_state.selected_option}!</div><div style="clear:both;"></div>', unsafe_allow_html=True)
@@ -265,75 +259,63 @@ st.markdown('</div>', unsafe_allow_html=True)
 # -----------------------------------------------------------------------------
 if st.session_state.selected_option is None:
     st.markdown("<h3>💡 알맞은 어휘를 선택하세요</h3>", unsafe_allow_html=True)
-    col1, col2 = st.columns(2)
-    
-    for i, opt in enumerate(current_quiz["options"]):
-        col = col1 if i == 0 else col2
-        col.button(
-            opt, 
-            use_container_width=True, 
-            key=f"opt_btn_{cur_idx}_{i}", 
-            on_click=select_answer, 
-            args=(opt,)
-        )
+    c1, c2 = st.columns(2)
+    for i, opt in enumerate(quiz["options"]):
+        col = c1 if i == 0 else c2
+        col.button(opt, use_container_width=True, key=f"btn_q{idx}_opt{i}", on_click=select_answer, args=(opt,))
 
 # -----------------------------------------------------------------------------
 # 7. 피드백 및 해설 카드
 # -----------------------------------------------------------------------------
 if st.session_state.selected_option is not None:
-    is_correct = (st.session_state.selected_option == current_quiz["correct"])
-    card_data = current_quiz["card"]
+    is_correct = (st.session_state.selected_option == quiz["correct"])
+    card = quiz["card"]
 
     if is_correct:
         st.success("🎉 정답입니다! 문맥에 정확한 표현을 고르셨습니다.")
     else:
         st.error("❌ 오답입니다! 어색한 표현을 선택하셨습니다.")
-        st.warning(f"🗣️ **친구 반응:** \"{current_quiz['wrong_reaction']}\"")
+        st.warning(f"🗣️ **친구 반응:** \"{quiz['wrong_reaction']}\"")
 
     st.write("---")
     st.markdown("<h3 style='color:#111111;'>📚 맞춤법 & 어휘 상세 비교 해설</h3>", unsafe_allow_html=True)
 
-    col_correct, col_wrong = st.columns(2)
+    col_cor, col_wrg = st.columns(2)
     
-    with col_correct:
-        ex_list_html = "".join([f"<li>{ex}</li>" for ex in card_data["correct_examples"]])
+    with col_cor:
+        ex_cor = "".join([f"<li>{e}</li>" for e in card["correct_examples"]])
         st.markdown(f"""
         <div class="card-box correct-border">
-            <h3 style="color:#198754 !important;">⭕ 올바른 표현<br><small style="font-size:16px;">{card_data['correct_word']}</small></h3>
-            <div class="visual-icon">{card_data['correct_icon']}</div>
-            <p><b>[핵심 뜻]</b><br>{card_data['correct_meaning']}</p>
-            <div class="tip-box">{card_data['correct_tip']}</div>
-            <p><b>[상세 설명]</b><br>{card_data['correct_desc']}</p>
+            <h3 style="color:#198754 !important;">⭕ 올바른 표현<br><small style="font-size:16px;">{card['correct_word']}</small></h3>
+            <div class="visual-icon">{card['correct_icon']}</div>
+            <p><b>[핵심 뜻]</b><br>{card['correct_meaning']}</p>
+            <div class="tip-box">{card['correct_tip']}</div>
+            <p><b>[상세 설명]</b><br>{card['correct_desc']}</p>
             <hr style="margin:15px 0;">
             <p><b>[대표 예문]</b></p>
-            <ul class="example-list" style="padding-left: 18px;">
-                {ex_list_html}
-            </ul>
+            <ul class="example-list" style="padding-left: 18px;">{ex_cor}</ul>
         </div>
         """, unsafe_allow_html=True)
         
-    with col_wrong:
-        ex_wrong_html = "".join([f"<li>{ex}</li>" for ex in card_data["wrong_examples"]])
+    with col_wrg:
+        ex_wrg = "".join([f"<li>{e}</li>" for e in card["wrong_examples"]])
         st.markdown(f"""
         <div class="card-box wrong-border">
-            <h3 style="color:#dc3545 !important;">❌ 헷갈리는 표현<br><small style="font-size:16px;">{card_data['wrong_word']}</small></h3>
-            <div class="visual-icon">{card_data['wrong_icon']}</div>
-            <p><b>[핵심 뜻]</b><br>{card_data['wrong_meaning']}</p>
-            <div class="tip-box">{card_data['wrong_tip']}</div>
-            <p><b>[상세 설명]</b><br>{card_data['wrong_desc']}</p>
+            <h3 style="color:#dc3545 !important;">❌ 헷갈리는 표현<br><small style="font-size:16px;">{card['wrong_word']}</small></h3>
+            <div class="visual-icon">{card['wrong_icon']}</div>
+            <p><b>[핵심 뜻]</b><br>{card['wrong_meaning']}</p>
+            <div class="tip-box">{card['wrong_tip']}</div>
+            <p><b>[상세 설명]</b><br>{card['wrong_desc']}</p>
             <hr style="margin:15px 0;">
             <p><b>[대표 예문]</b></p>
-            <ul class="example-list" style="padding-left: 18px;">
-                {ex_wrong_html}
-            </ul>
+            <ul class="example-list" style="padding-left: 18px;">{ex_wrg}</ul>
         </div>
         """, unsafe_allow_html=True)
 
     st.write("")
-    
-    if cur_idx < len(QUIZ_DATA) - 1:
-        st.button("다음 문제 풀기 ➡️", use_container_width=True, key=f"next_btn_{cur_idx}", on_click=next_quiz)
+    if idx < len(QUIZ_DATA) - 1:
+        st.button("다음 문제 풀기 ➡️", use_container_width=True, key=f"next_btn_{idx}", on_click=next_quiz)
     else:
         st.balloons()
         st.success("🏆 모든 대화 학습을 다 마쳤습니다!")
-        st.button("처음부터 다시 학습하기 🔄", use_container_width=True, key="reset_btn_end", on_click=reset_quiz)
+        st.button("처음부터 다시 학습하기 🔄", use_container_width=True, key="reset_btn", on_click=reset_quiz)
